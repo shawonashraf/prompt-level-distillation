@@ -6,7 +6,7 @@ from collections import defaultdict
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
-from src.utils import create_client, chat_completion
+from src.utils import chat_completion
 from src.models import ClusterResult, ConflictResult
 from src.evaluate import compute_macro_f1
 from src.phase4_inference import run_inference
@@ -34,8 +34,6 @@ def resolve_conflicts(
             error_examples=[],
         )
 
-    teacher_client = create_client(config.teacher)
-    student_client = create_client(config.student)
     env = Environment(loader=FileSystemLoader("prompts"))
     conflict_template = env.get_template("conflict_resolution.j2")
 
@@ -46,7 +44,6 @@ def resolve_conflicts(
         log.info(f"Conflict resolution iteration {iteration + 1}")
 
         predictions = run_inference(
-            student_client,
             config,
             dataset,
             best_instructions,
@@ -117,12 +114,9 @@ def resolve_conflicts(
         )
 
         response = chat_completion(
-            teacher_client,
             system="You refine reasoning instructions based on error analysis.",
             user=prompt,
-            model=config.teacher.model,
-            temperature=config.teacher.temperature,
-            max_tokens=config.teacher.max_tokens,
+            config=config.teacher,
         )
 
         parsed = json.loads(response)
