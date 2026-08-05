@@ -1,0 +1,83 @@
+from datasets import load_dataset
+from src.config import DatasetConfig
+
+
+DATASET_MAP = {
+    "contract-nli": "YorkNLPLab/contractnli",
+    "stereoset": "google/stereoset",
+}
+
+LABEL_MAPS = {
+    "contract-nli": {0: "Entailment", 1: "Contradiction", 2: "NotMentioned"},
+    "stereoset": ["gender", "race", "profession", "religion"],
+}
+
+
+class DatasetExample:
+    def __init__(self, raw: dict, dataset_name: str):
+        self._raw = raw
+        self._name = dataset_name
+
+    def get(self, key, default=None):
+        return self._raw.get(key, default)
+
+    def __getattr__(self, key):
+        return self._raw.get(key)
+
+    def _get_input_text(self) -> str:
+        if self._name == "contract-nli":
+            return self._raw.get("sentence1", "")
+        return self._raw.get("context", "")
+
+    def _get_hypothesis(self) -> str:
+        if self._name == "contract-nli":
+            return self._raw.get("sentence2", "")
+        return self._raw.get("sentence_stem", "")
+
+    def _get_gold_label(self) -> str:
+        if self._name == "contract-nli":
+            label = self._raw.get("label", "")
+            if isinstance(label, (int, float)):
+                return LABEL_MAPS["contract-nli"].get(int(label), str(label))
+            return str(label)
+        return str(self._raw.get("category", ""))
+
+
+class DatasetWrapper:
+    def __init__(self, examples: list[DatasetExample], dataset_name: str):
+        self._examples = examples
+        self._name = dataset_name
+
+    def __len__(self) -> int:
+        return len(self._examples)
+
+    def __getitem__(self, idx) -> DatasetExample:
+        return self._examples[idx]
+
+    def __iter__(self):
+        return iter(self._examples)
+
+
+def get_labels(dataset_name: str) -> list[str]:
+    if dataset_name == "contract-nli":
+        return list(LABEL_MAPS["contract-nli"].values())
+    return LABEL_MAPS.get("stereoset", [])
+
+
+def load_dataset_by_config(config: DatasetConfig) -> DatasetWrapper:
+    hf_id = config.huggingface_id or DATASET_MAP.get(config.name)
+    if not hf_id:
+        raise ValueError(
+            f"Unknown dataset '{config.name}'. "
+            f"Supported: {list(DATASET_MAP.keys())}. "
+            f"Or set huggingface_id in config."
+        )
+
+    dataset = load_dataset(hf_id)
+    ds = dataset[config.split]
+
+    if config.max_samples:
+        ds = ds.select(range(min(config.max_samples, len(ds))))
+
+    examples = [DatasetExample(ex, config.name) for ex in ds]
+    return DatasetWrapper(examples, config.name)
