@@ -3,14 +3,13 @@ import logging
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from src.config import Config
-from src.utils import create_client, chat_completion
+from src.utils import chat_completion
 from src.models import ExtractionResult
 
 log = logging.getLogger(__name__)
 
 
 def extract_instructions(config: Config, dataset) -> list[ExtractionResult]:
-    teacher_client = create_client(config.teacher)
     env = Environment(loader=FileSystemLoader("prompts"))
 
     template_name = (
@@ -48,12 +47,9 @@ def extract_instructions(config: Config, dataset) -> list[ExtractionResult]:
                 gold_label = str(example.get("category", ""))
 
             response = chat_completion(
-                teacher_client,
                 system="You are a reasoning teacher that extracts logic rules from examples.",
                 user=prompt,
-                model=config.teacher.model,
-                temperature=config.teacher.temperature,
-                max_tokens=config.teacher.max_tokens,
+                config=config.teacher,
             )
 
             parsed = json.loads(response)
