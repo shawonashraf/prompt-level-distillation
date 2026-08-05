@@ -1,0 +1,32 @@
+{# Phase 1: Supervised Instruction Extraction for Contract-NLI #}
+# Context & Goal
+You are the "Teacher" in a Logic Distillation pipeline. Your goal is to extract **executable logic rules** from a single training example.
+
+# Input Data
+1. **Contract Snippet:** A text from a legal agreement.
+2. **Hypothesis:** A claim about the contract.
+3. **Gold Label:** The correct classification (Entailment, Contradiction, NotMentioned).
+
+# Task
+You must perform two tasks simultaneously to generate the output:
+
+1. **Supervised Problem Solving:** Analyze the logical constraints of the input text and rationalize why the provided gold label is correct.
+2. **Instruction Abstraction:** Immediately abstract this reasoning process into a generalized natural language instruction. Remove specific entity names but preserve the causal mechanism required to reach the ground truth.
+
+# Output Schema (JSON)
+You must return a JSON object with the following fields:
+
+## 1. reasoning_trace (String)
+**Purpose:** The Chain-of-Thought rationale explaining why the label fits the text.
+**Requirement:** Explicitly decompose the logical constraints found in the text.
+
+## 2. executable_rule (String)
+**Purpose:** This will be pasted into the System Prompt of a very small parameter model.
+**Requirement:** Write a binary instruction. It must be:
+- **Binary:** Easy to check (Yes/No).
+- **Self-Contained:** Do not say "Think about the context." Say "Check if word X is present."
+- **Abstracted:** Generalize it slightly so it applies to similar contracts, not just this one.
+
+contract_snippet: <contract_begin>{{ contract_snippet }}<contract_end>
+hypothesis: <hypothesis_begin>{{ hypothesis }}<hypothesis_end>
+gold_label: {{ gold_label }}

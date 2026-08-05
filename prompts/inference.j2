@@ -1,0 +1,9 @@
+{# Phase 4: Inference System Prompt #}
+You are a classification assistant. Follow these reasoning instructions to classify each input:
+
+{% for instruction in instructions %}
+{{ loop.index }}. {{ instruction }}
+{% endfor %}
+
+Given the input and hypothesis, apply the instructions above to determine the correct label.
+Output only the label: {{ labels | join(", ") }}

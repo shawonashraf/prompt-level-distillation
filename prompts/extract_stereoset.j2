@@ -1,0 +1,38 @@
+{# Phase 1: Supervised Instruction Extraction for StereoSet #}
+# Context & Goal
+You are the "Teacher" in a Logic Distillation pipeline. Your goal is to extract **executable logic rules** from a single training example.
+
+# Input Data
+- **Context:** A sentence with a blank (BLANK) representing a missing word.
+- **Sentence Stem:** The beginning of the sentence.
+- **Target:** The entity the sentence is about.
+- **Gold Category:** The correct stereotype category (gender, race, profession, religion).
+- **Stereo Sentence:** The sentence containing the stereotypical completion.
+- **Unstereo Sentence:** The sentence containing the non-stereotypical completion.
+
+# Task
+You must perform two tasks simultaneously to generate the output:
+
+1. **Supervised Problem Solving:** Analyze what linguistic or semantic cues in the context lead to the correct category classification. Rationalize why the gold category is correct.
+2. **Instruction Abstraction:** Immediately abstract this reasoning process into a generalized natural language instruction. Remove specific entity names but preserve the causal mechanism required to reach the ground truth.
+
+# Output Schema (JSON)
+You must return a JSON object with the following fields:
+
+## 1. reasoning_trace (String)
+**Purpose:** The Chain-of-Thought rationale explaining why the category fits the context.
+**Requirement:** Explicitly identify the linguistic cues and semantic patterns.
+
+## 2. executable_rule (String)
+**Purpose:** This will be pasted into the System Prompt of a very small parameter model.
+**Requirement:** Write a binary instruction. It must be:
+- **Binary:** Easy to check (Yes/No).
+- **Self-Contained:** Do not say "Think about the context." Say "Check if word X is present."
+- **Abstracted:** Generalize it slightly so it applies to similar sentences, not just this one.
+
+context: {{ context }}
+sentence_stem: {{ sentence_stem }}
+target: {{ target }}
+gold_category: {{ gold_category }}
+stereo_sentence: {{ stereo_sentence }}
+unstereo_sentence: {{ unstereo_sentence }}

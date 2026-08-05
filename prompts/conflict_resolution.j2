@@ -1,0 +1,43 @@
+{# Phase 3: Conflict Resolution #}
+# Context & Goal
+You are refining a set of consolidated reasoning instructions by analyzing where the student model failed.
+
+# Current Instructions
+These are the current consolidated instructions being used:
+{% for instruction in instructions %}
+{{ loop.index }}. {{ instruction }}
+{% endfor %}
+
+# Failure Examples
+The student model made errors on these examples despite having the instructions above:
+{% for example in failures %}
+---
+Input: {{ example.input_text }}
+Hypothesis: {{ example.hypothesis }}
+Gold Label: {{ example.gold_label }}
+Predicted Label: {{ example.predicted_label }}
+---
+{% endfor %}
+
+# Success Examples
+The student model got these examples correct:
+{% for example in successes %}
+---
+Input: {{ example.input_text }}
+Hypothesis: {{ example.hypothesis }}
+Gold Label: {{ example.gold_label }}
+---
+{% endfor %}
+
+# Task
+Analyze the failures and successes to generate an IMPROVED set of consolidated instructions. Your refined instructions should:
+1. Address the root causes of the failures
+2. Preserve the logic that led to correct predictions
+3. Resolve any contradictions between instructions
+4. Be more precise about edge cases
+
+# Output Schema (JSON)
+Return a JSON object with the following field:
+
+## refined_instructions (Array of Strings)
+The improved set of consolidated instructions.

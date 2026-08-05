@@ -1,0 +1,24 @@
+{# Phase 2: Cluster Synthesis #}
+# Context & Goal
+You are synthesizing a set of similar reasoning rules into a single unified instruction.
+
+# Input
+Below is a cluster of semantically similar micro-instructions extracted from training examples. They all express variations of the same underlying reasoning pattern.
+
+# Task
+Synthesize these rules into ONE consolidated instruction that captures the complete reasoning pattern. The consolidated instruction should:
+1. Cover all the nuances present in the individual rules
+2. Be written as a clear, actionable instruction
+3. Be generalizable to unseen examples
+4. Be concise but complete
+
+# Cluster Rules:
+{% for rule in rules %}
+- {{ rule }}
+{% endfor %}
+
+# Output Schema (JSON)
+Return a JSON object with the following field:
+
+## consolidated_instruction (String)
+The single unified instruction that captures the reasoning pattern from all rules in this cluster.
