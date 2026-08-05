@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
-from src.utils import create_client, chat_completion
+from src.utils import chat_completion
 from src.models import ExtractionResult, ClusterResult
 
 log = logging.getLogger(__name__)
@@ -54,7 +54,6 @@ def cluster_and_synthesize(
         clusters[label]["indices"].append(indices[idx])
         clusters[label]["rules"].append(rules[idx])
 
-    teacher_client = create_client(config.teacher)
     env = Environment(loader=FileSystemLoader("prompts"))
     template = env.get_template("cluster_synthesis.j2")
 
@@ -63,12 +62,9 @@ def cluster_and_synthesize(
         try:
             prompt = template.render(rules=members["rules"])
             response = chat_completion(
-                teacher_client,
                 system="You synthesize similar rules into unified instructions.",
                 user=prompt,
-                model=config.teacher.model,
-                temperature=config.teacher.temperature,
-                max_tokens=config.teacher.max_tokens,
+                config=config.teacher,
             )
 
             parsed = json.loads(response)
