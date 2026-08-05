@@ -1,6 +1,5 @@
 import logging
 
-from openai import OpenAI
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
@@ -10,7 +9,6 @@ log = logging.getLogger(__name__)
 
 
 def run_inference(
-    client: OpenAI,
     config: Config,
     dataset,
     instructions: list[str],
@@ -35,12 +33,9 @@ def run_inference(
             user_prompt = f"Input: {input_text}\nHypothesis: {hypothesis}"
 
             response = chat_completion(
-                client,
                 system=system_prompt,
                 user=user_prompt,
-                model=config.student.model,
-                temperature=config.student.temperature,
-                max_tokens=config.student.max_tokens,
+                config=config.student,
             )
 
             predicted = response.strip()
