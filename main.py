@@ -13,7 +13,7 @@ from src.phase2_cluster import cluster_and_synthesize, save_clusters
 from src.phase3_conflict import resolve_conflicts, save_conflict_result
 from src.phase4_inference import run_inference
 from src.evaluate import compute_macro_f1
-from src.utils import create_client
+from src.utils import get_stats
 
 log = logging.getLogger("pld")
 
@@ -212,9 +212,8 @@ def main():
                 c["consolidated_instruction"] for c in cl if c["consolidated_instruction"]
             ]
 
-        student_client = create_client(config.student)
         predictions = run_inference(
-            student_client, config, dataset, consolidated_instructions, labels
+            config, dataset, consolidated_instructions, labels
         )
 
         gold_labels = [ex._get_gold_label() for ex in dataset]
@@ -234,6 +233,15 @@ def main():
                 f.write(f"{i}. {inst}\n\n")
 
         log.info("Saved final instructions to output/final_instructions.txt")
+
+    stats = get_stats()
+    wandb.log({
+        "llm/requests": stats.requests,
+        "llm/input_tokens": stats.input_tokens,
+        "llm/output_tokens": stats.output_tokens,
+        "llm/reasoning_tokens": stats.reasoning_tokens,
+    })
+    log.info(f"LLM stats: {stats.requests} requests, {stats.input_tokens} input tokens, {stats.output_tokens} output tokens, {stats.reasoning_tokens} reasoning tokens")
 
     wandb.finish()
     log.info("Done.")
