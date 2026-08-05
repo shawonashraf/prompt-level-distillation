@@ -1,29 +1,64 @@
-from openai import OpenAI
+from dataclasses import dataclass, field
+from typing import Optional
+
+import litellm
 from src.config import ModelConfig
 
 
-def create_client(config: ModelConfig) -> OpenAI:
-    return OpenAI(
-        base_url=config.base_url,
-        api_key=config.api_key or "not-needed",
-    )
+@dataclass
+class LLMStats:
+    requests: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    reasoning_tokens: int = 0
+
+    def log(self, response):
+        if hasattr(response, "usage") and response.usage:
+            usage = response.usage
+            self.requests += 1
+            self.input_tokens += getattr(usage, "prompt_tokens", 0) or 0
+            self.output_tokens += getattr(usage, "completion_tokens", 0) or 0
+            self.reasoning_tokens += getattr(usage, "reasoning_tokens", 0) or 0
+
+    def as_dict(self) -> dict:
+        return {
+            "requests": self.requests,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "reasoning_tokens": self.reasoning_tokens,
+        }
+
+
+_stats = LLMStats()
+
+
+def get_stats() -> LLMStats:
+    return _stats
+
+
+def reset_stats():
+    global _stats
+    _stats = LLMStats()
 
 
 def chat_completion(
-    client: OpenAI,
     system: str,
     user: str,
-    model: str,
-    temperature: float = 0.7,
-    max_tokens: int = 4096,
+    config: ModelConfig,
+    temperature: Optional[float] = None,
+    max_tokens: Optional[int] = None,
 ) -> str:
-    response = client.chat.completions.create(
+    model = f"openai/{config.model}"
+    response = litellm.completion(
         model=model,
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
-        temperature=temperature,
-        max_tokens=max_tokens,
+        api_base=config.base_url,
+        api_key=config.api_key or "not-needed",
+        temperature=temperature if temperature is not None else config.temperature,
+        max_tokens=max_tokens if max_tokens is not None else config.max_tokens,
     )
+    _stats.log(response)
     return response.choices[0].message.content or ""
