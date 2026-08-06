@@ -1,0 +1,39 @@
+teacher:
+  model: google/gemma-4-26b-a4b-qat
+  base_url: http://localhost:1234/v1
+  temperature: 0.7
+  max_tokens: 2048
+
+student:
+  model: google/gemma-4-26b-a4b-qat
+  base_url: http://localhost:1234/v1
+  temperature: 0.3
+  max_tokens: 128
+
+dataset:
+  name: contract-nli
+  split: train
+  max_samples: 5
+
+clustering:
+  eps: 0.5
+  min_samples: 2
+  embedding_model: all-MiniLM-L6-v2
+
+conflict_resolution:
+  max_iterations: 2
+  convergence_threshold: 0.01
+  sample_size: 5
+
+wandb:
+  project: prompt-distill
+  run_name: example-run
+  entity: null
+
+phases:
+  extract: true
+  cluster: true
+  conflict: true
+  evaluate: true
+
+output_dir: output_example
