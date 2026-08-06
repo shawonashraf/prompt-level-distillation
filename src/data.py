@@ -3,12 +3,16 @@ from src.config import DatasetConfig
 
 
 DATASET_MAP = {
-    "contract-nli": "YorkNLPLab/contractnli",
+    "contract-nli": "kiddothe2b/contract-nli",
     "stereoset": "google/stereoset",
 }
 
+SUBSET_MAP = {
+    "contract-nli": "contractnli_a",
+}
+
 LABEL_MAPS = {
-    "contract-nli": {0: "Entailment", 1: "Contradiction", 2: "NotMentioned"},
+    "contract-nli": {0: "Contradiction", 1: "Entailment", 2: "NotMentioned"},
     "stereoset": ["gender", "race", "profession", "religion"],
 }
 
@@ -26,12 +30,12 @@ class DatasetExample:
 
     def _get_input_text(self) -> str:
         if self._name == "contract-nli":
-            return self._raw.get("sentence1", "")
+            return self._raw.get("premise", "")
         return self._raw.get("context", "")
 
     def _get_hypothesis(self) -> str:
         if self._name == "contract-nli":
-            return self._raw.get("sentence2", "")
+            return self._raw.get("hypothesis", "")
         return self._raw.get("sentence_stem", "")
 
     def _get_gold_label(self) -> str:
@@ -73,7 +77,11 @@ def load_dataset_by_config(config: DatasetConfig) -> DatasetWrapper:
             f"Or set huggingface_id in config."
         )
 
-    dataset = load_dataset(hf_id)
+    dataset = load_dataset(
+        hf_id,
+        revision="refs/convert/parquet",
+        data_dir=SUBSET_MAP.get(config.name),
+    )
     ds = dataset[config.split]
 
     if config.max_samples:

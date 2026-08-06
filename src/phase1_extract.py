@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from src.config import Config
-from src.utils import chat_completion
+from src.utils import chat_completion, parse_json_response
 from src.models import ExtractionResult
 
 log = logging.getLogger(__name__)
@@ -26,12 +26,12 @@ def extract_instructions(config: Config, dataset) -> list[ExtractionResult]:
         try:
             if config.dataset.name == "contract-nli":
                 prompt = template.render(
-                    contract_snippet=example.get("sentence1", ""),
-                    hypothesis=example.get("sentence2", ""),
+                    contract_snippet=example.get("premise", ""),
+                    hypothesis=example.get("hypothesis", ""),
                     gold_label=example.get("label", ""),
                 )
-                input_text = example.get("sentence1", "")
-                hypothesis = example.get("sentence2", "")
+                input_text = example.get("premise", "")
+                hypothesis = example.get("hypothesis", "")
                 gold_label = str(example.get("label", ""))
             else:
                 prompt = template.render(
@@ -52,7 +52,7 @@ def extract_instructions(config: Config, dataset) -> list[ExtractionResult]:
                 config=config.teacher,
             )
 
-            parsed = json.loads(response)
+            parsed = parse_json_response(response)
             results.append(
                 ExtractionResult(
                     index=idx,
