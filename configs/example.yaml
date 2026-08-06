@@ -2,13 +2,13 @@ teacher:
   model: google/gemma-4-26b-a4b-qat
   base_url: http://localhost:1234/v1
   temperature: 0.7
-  max_tokens: 2048
+  max_tokens: 8192
 
 student:
   model: google/gemma-4-26b-a4b-qat
   base_url: http://localhost:1234/v1
   temperature: 0.3
-  max_tokens: 128
+  max_tokens: 8192
 
 dataset:
   name: contract-nli
@@ -26,7 +26,7 @@ conflict_resolution:
   sample_size: 5
 
 wandb:
-  project: prompt-distill
+  project: prompt-level-distillation
   run_name: example-run
   entity: null
 
