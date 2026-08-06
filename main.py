@@ -104,13 +104,11 @@ def main():
             "phase1/failure_rate": 1 - (success_count / len(extractions)),
         })
 
-        with wandb.Table(
-            columns=["index", "gold_label", "rule", "success"]
-        ) as table:
-            for e in extractions[:50]:
-                table.add_data(
-                    e.index, e.gold_label, e.executable_rule[:200], e.success
-                )
+        table = wandb.Table(columns=["index", "gold_label", "rule", "success"])
+        for e in extractions[:50]:
+            table.add_data(
+                e.index, e.gold_label, e.executable_rule[:200], e.success
+            )
         wandb.log({"phase1/sample_instructions": table})
 
     if config.phases.cluster:
@@ -157,15 +155,13 @@ def main():
             ),
         })
 
-        with wandb.Table(
-            columns=["cluster_id", "size", "consolidated_instruction"]
-        ) as table:
-            for c in clusters:
-                table.add_data(
-                    c.cluster_id,
-                    len(c.member_rules),
-                    c.consolidated_instruction[:300],
-                )
+        table = wandb.Table(columns=["cluster_id", "size", "consolidated_instruction"])
+        for c in clusters:
+            table.add_data(
+                c.cluster_id,
+                len(c.member_rules),
+                c.consolidated_instruction[:300],
+            )
         wandb.log({"phase2/clusters": table})
 
     if config.phases.conflict:
