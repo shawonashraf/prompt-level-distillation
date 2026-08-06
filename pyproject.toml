@@ -1,7 +1,7 @@
 [project]
-name = "prompt-distill"
+name = "prompt-level-distillation"
 version = "0.1.0"
-description = "Add your description here"
+description = "Prompt-Level Distillation: transferring reasoning from teacher to student LLMs via instruction extraction"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
