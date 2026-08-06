@@ -1,4 +1,6 @@
 from dataclasses import dataclass, field
+import json
+import re
 from typing import Optional
 
 import litellm
@@ -62,3 +64,14 @@ def chat_completion(
     )
     _stats.log(response)
     return response.choices[0].message.content or ""
+
+
+def parse_json_response(text: str) -> dict:
+    # ponytail: models wrap JSON in markdown fences or add prose; grab first {...} block
+    fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if fence:
+        return json.loads(fence.group(1))
+    brace = re.search(r"\{.*\}", text, re.DOTALL)
+    if brace:
+        return json.loads(brace.group(0))
+    return json.loads(text)

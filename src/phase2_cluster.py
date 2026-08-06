@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
-from src.utils import chat_completion
+from src.utils import chat_completion, parse_json_response
 from src.models import ExtractionResult, ClusterResult
 
 log = logging.getLogger(__name__)
@@ -38,8 +38,8 @@ def cluster_and_synthesize(
     labels = db.fit_predict(embeddings)
 
     unique_labels = set(labels)
-    noise_count = unique_labels.count(-1)
-    n_clusters = len(unique_labels) - (1 if -1 in unique_labels else 0)
+    noise_count = 1 if -1 in unique_labels else 0
+    n_clusters = len(unique_labels) - noise_count
     log.info(
         f"DBSCAN found {n_clusters} clusters, {noise_count} noise points "
         f"(eps={config.clustering.eps}, min_samples={config.clustering.min_samples})"
@@ -67,7 +67,7 @@ def cluster_and_synthesize(
                 config=config.teacher,
             )
 
-            parsed = json.loads(response)
+            parsed = parse_json_response(response)
             results.append(
                 ClusterResult(
                     cluster_id=int(cluster_id),

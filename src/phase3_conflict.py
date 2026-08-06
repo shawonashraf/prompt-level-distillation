@@ -6,7 +6,7 @@ from collections import defaultdict
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
-from src.utils import chat_completion
+from src.utils import chat_completion, parse_json_response
 from src.models import ClusterResult, ConflictResult
 from src.evaluate import compute_macro_f1
 from src.phase4_inference import run_inference
@@ -119,7 +119,7 @@ def resolve_conflicts(
             config=config.teacher,
         )
 
-        parsed = json.loads(response)
+        parsed = parse_json_response(response)
         best_instructions = parsed.get("refined_instructions", best_instructions)
         prev_f1 = current_f1
 
