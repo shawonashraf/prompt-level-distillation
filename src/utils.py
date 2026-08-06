@@ -20,7 +20,9 @@ class LLMStats:
             self.requests += 1
             self.input_tokens += getattr(usage, "prompt_tokens", 0) or 0
             self.output_tokens += getattr(usage, "completion_tokens", 0) or 0
-            self.reasoning_tokens += getattr(usage, "reasoning_tokens", 0) or 0
+            details = getattr(usage, "completion_tokens_details", None)
+            if details:
+                self.reasoning_tokens += getattr(details, "reasoning_tokens", 0) or 0
 
     def as_dict(self) -> dict:
         return {
