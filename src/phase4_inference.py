@@ -53,7 +53,17 @@ def run_inference(
 
 def normalize_label(predicted: str, labels: list[str]) -> str:
     predicted_lower = predicted.lower().strip()
+    if not predicted_lower:
+        return ""
+    best = ""
+    best_len = len(predicted_lower)
     for label in labels:
-        if label.lower() in predicted_lower:
-            return label
-    return predicted.strip()
+        label_lower = label.lower()
+        idx = predicted_lower.find(label_lower)
+        if idx != -1:
+            # ponytail: prefer the earliest (leftmost) match to avoid
+            # "NotMentioned" being shadowed by substrings
+            if idx < best_len:
+                best_len = idx
+                best = label
+    return best if best else predicted.strip()
