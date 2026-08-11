@@ -223,9 +223,32 @@ def main():
 
         log.info(f"Final Macro F1: {f1:.4f}")
 
+        records = [
+            {
+                "input_text": ex._get_input_text(),
+                "hypothesis": ex._get_hypothesis(),
+                "gold_label": gold,
+                "predicted_label": pred,
+                "correct": gold == pred,
+            }
+            for ex, gold, pred in zip(eval_dataset, gold_labels, predictions)
+        ]
+        with open(os.path.join(config.output_dir, "predictions.json"), "w") as f:
+            json.dump({"macro_f1": f1, "predictions": records}, f, indent=2)
+
+        table = wandb.Table(
+            columns=["input_text", "hypothesis", "gold_label", "predicted_label", "correct"]
+        )
+        for r in records:
+            table.add_data(
+                r["input_text"][:500], r["hypothesis"][:500],
+                r["gold_label"], r["predicted_label"], r["correct"],
+            )
         wandb.log({
             "phase4/macro_f1": f1,
             "phase4/num_instructions": len(consolidated_instructions),
+            "phase4/num_eval_examples": len(records),
+            "phase4/predictions": table,
         })
 
         with open(
@@ -235,6 +258,12 @@ def main():
                 f.write(f"{i}. {inst}\n\n")
 
         log.info(f"Saved final instructions to {config.output_dir}/final_instructions.txt")
+
+    artifact = wandb.Artifact(
+        name=f"pipeline-outputs-{wandb.run.id}", type="pipeline-outputs"
+    )
+    artifact.add_dir(config.output_dir)
+    wandb.log_artifact(artifact)
 
     stats = get_stats()
     wandb.log({

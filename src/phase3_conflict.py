@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from collections import defaultdict
 
+import wandb
 from jinja2 import Environment, FileSystemLoader
 
 from src.config import Config
@@ -60,6 +61,11 @@ def resolve_conflicts(
             f"  Iteration {iteration + 1}: F1 = {current_f1:.4f} "
             f"(prev = {prev_f1:.4f})"
         )
+        wandb.log({
+            "phase3/iteration": iteration + 1,
+            "phase3/iter_f1": current_f1,
+            "phase3/num_instructions": len(best_instructions),
+        })
 
         if abs(current_f1 - prev_f1) <= config.conflict_resolution.convergence_threshold:
             log.info(f"  Converged at iteration {iteration + 1}")
