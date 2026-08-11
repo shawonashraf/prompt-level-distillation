@@ -24,27 +24,24 @@ def extract_instructions(config: Config, dataset) -> list[ExtractionResult]:
 
     for idx, example in enumerate(dataset):
         try:
+            input_text = example._get_input_text()
+            hypothesis = example._get_hypothesis()
+            gold_label = example._get_gold_label()
+
             if config.dataset.name == "contract-nli":
                 prompt = template.render(
-                    contract_snippet=example.get("premise", ""),
-                    hypothesis=example.get("hypothesis", ""),
-                    gold_label=example.get("label", ""),
+                    contract_snippet=input_text,
+                    hypothesis=hypothesis,
+                    gold_label=gold_label,
                 )
-                input_text = example.get("premise", "")
-                hypothesis = example.get("hypothesis", "")
-                gold_label = str(example.get("label", ""))
             else:
                 prompt = template.render(
-                    context=example.get("context", ""),
-                    sentence_stem=example.get("sentence_stem", ""),
+                    context=input_text,
                     target=example.get("target", ""),
-                    gold_category=example.get("category", ""),
+                    gold_category=gold_label,
                     stereo_sentence=example.get("stereo_sentence", ""),
                     unstereo_sentence=example.get("unstereo_sentence", ""),
                 )
-                input_text = example.get("context", "")
-                hypothesis = example.get("sentence_stem", "")
-                gold_label = str(example.get("category", ""))
 
             response = chat_completion(
                 system="You are a reasoning teacher that extracts logic rules from examples.",

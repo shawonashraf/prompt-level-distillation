@@ -14,6 +14,8 @@ dataset:
   name: contract-nli
   split: train
   max_samples: 50
+  eval_split: test
+  eval_max_samples: 50
 
 clustering:
   eps: 0.5

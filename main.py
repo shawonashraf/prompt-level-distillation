@@ -1,13 +1,15 @@
 import argparse
+import dataclasses
+import json
 import logging
 import os
 import sys
-from pathlib import Path
 
 import wandb
 
 from src.config import Config, load_config
 from src.data import load_dataset_by_config, get_labels
+from src.models import ExtractionResult, ClusterResult
 from src.phase1_extract import extract_instructions, save_instructions
 from src.phase2_cluster import cluster_and_synthesize, save_clusters
 from src.phase3_conflict import resolve_conflicts, save_conflict_result
@@ -71,7 +73,7 @@ def main():
         project=config.wandb.project,
         name=config.wandb.run_name,
         entity=config.wandb.entity,
-        config=dataclasses_as_dict(config),
+        config=dataclasses.asdict(config),
     )
 
     log.info(f"Config: {args.config}")
@@ -116,26 +118,10 @@ def main():
         log.info("PHASE 2: Clustering Logic Synthesis")
         log.info("=" * 60)
 
-        if config.phases.extract:
-            clusters = cluster_and_synthesize(config, extractions)
-        else:
-            import json
+        if not config.phases.extract:
             with open(os.path.join(config.output_dir, "extracted_instructions.json")) as f:
-                raw = json.load(f)
-            from src.models import ExtractionResult
-            extractions = [
-                ExtractionResult(
-                    index=r["index"],
-                    input_text=r["input_text"],
-                    hypothesis=r["hypothesis"],
-                    gold_label=r["gold_label"],
-                    reasoning_trace=r["reasoning_trace"],
-                    executable_rule=r["executable_rule"],
-                    success=r["success"],
-                )
-                for r in raw
-            ]
-            clusters = cluster_and_synthesize(config, extractions)
+                extractions = [ExtractionResult(**r) for r in json.load(f)]
+        clusters = cluster_and_synthesize(config, extractions)
 
         cluster_path = save_clusters(clusters, config.output_dir)
         consolidated_instructions = [
@@ -169,9 +155,13 @@ def main():
         log.info("PHASE 3: Conflict Resolution")
         log.info("=" * 60)
 
+        if not config.phases.cluster:
+            with open(os.path.join(config.output_dir, "clusters.json")) as f:
+                clusters = [ClusterResult(**c) for c in json.load(f)]
+
         conflict_result = resolve_conflicts(
             config,
-            clusters if config.phases.cluster else [],
+            clusters,
             dataset,
             labels,
         )
@@ -196,7 +186,6 @@ def main():
         log.info("=" * 60)
 
         if not consolidated_instructions:
-            import json
             with open(os.path.join(config.output_dir, "conflict_resolution.json")) as f:
                 cr = json.load(f)
             consolidated_instructions = cr.get("consolidated_instructions", [])
@@ -208,11 +197,28 @@ def main():
                 c["consolidated_instruction"] for c in cl if c["consolidated_instruction"]
             ]
 
+        if config.dataset.eval_split and config.dataset.eval_split != config.dataset.split:
+            eval_dataset = load_dataset_by_config(
+                config.dataset,
+                split=config.dataset.eval_split,
+                max_samples=config.dataset.eval_max_samples or config.dataset.max_samples,
+            )
+            log.info(
+                f"Evaluating on held-out split '{config.dataset.eval_split}' "
+                f"({len(eval_dataset)} examples)"
+            )
+        else:
+            eval_dataset = dataset
+            log.warning(
+                "No held-out eval_split configured; evaluating on the same "
+                "data used for distillation (train leakage)."
+            )
+
         predictions = run_inference(
-            config, dataset, consolidated_instructions, labels
+            config, eval_dataset, consolidated_instructions, labels
         )
 
-        gold_labels = [ex._get_gold_label() for ex in dataset]
+        gold_labels = [ex._get_gold_label() for ex in eval_dataset]
         f1 = compute_macro_f1(gold_labels, predictions, labels)
 
         log.info(f"Final Macro F1: {f1:.4f}")
@@ -228,7 +234,7 @@ def main():
             for i, inst in enumerate(consolidated_instructions, 1):
                 f.write(f"{i}. {inst}\n\n")
 
-        log.info("Saved final instructions to output/final_instructions.txt")
+        log.info(f"Saved final instructions to {config.output_dir}/final_instructions.txt")
 
     stats = get_stats()
     wandb.log({
@@ -241,19 +247,6 @@ def main():
 
     wandb.finish()
     log.info("Done.")
-
-
-def dataclasses_as_dict(obj) -> dict:
-    d = {}
-    for field_name in dir(obj):
-        if field_name.startswith("_"):
-            continue
-        val = getattr(obj, field_name)
-        if hasattr(val, "__dataclass_fields__"):
-            d[field_name] = dataclasses_as_dict(val)
-        elif isinstance(val, (str, int, float, bool)) or val is None:
-            d[field_name] = val
-    return d
 
 
 if __name__ == "__main__":

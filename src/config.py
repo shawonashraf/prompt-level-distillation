@@ -19,6 +19,9 @@ class DatasetConfig:
     split: str = "train"
     max_samples: Optional[int] = None
     huggingface_id: Optional[str] = None
+    # held-out split for Phase 4 evaluation; None falls back to `split` (leakage)
+    eval_split: Optional[str] = None
+    eval_max_samples: Optional[int] = None
 
 
 @dataclass

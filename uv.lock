@@ -1637,7 +1637,7 @@ wheels = [
 ]
 
 [[package]]
-name = "prompt-distill"
+name = "prompt-level-distillation"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

@@ -3,12 +3,11 @@
 You are the "Teacher" in a Logic Distillation pipeline. Your goal is to extract **executable logic rules** from a single training example.
 
 # Input Data
-- **Context:** A sentence with a blank (BLANK) representing a missing word.
-- **Sentence Stem:** The beginning of the sentence.
+- **Context:** A sentence about a target group.
 - **Target:** The entity the sentence is about.
 - **Gold Category:** The correct stereotype category (gender, race, profession, religion).
-- **Stereo Sentence:** The sentence containing the stereotypical completion.
-- **Unstereo Sentence:** The sentence containing the non-stereotypical completion.
+- **Stereo Sentence:** A continuation containing the stereotypical association.
+- **Unstereo Sentence:** A continuation containing the anti-stereotypical association.
 
 # Task
 You must perform two tasks simultaneously to generate the output:
@@ -31,7 +30,6 @@ You must return a JSON object with the following fields:
 - **Abstracted:** Generalize it slightly so it applies to similar sentences, not just this one.
 
 context: {{ context }}
-sentence_stem: {{ sentence_stem }}
 target: {{ target }}
 gold_category: {{ gold_category }}
 stereo_sentence: {{ stereo_sentence }}

@@ -6,8 +6,10 @@ def compute_macro_f1(
     y_pred: list[str],
     labels: list[str],
 ) -> float:
+    # keep empty/failed predictions: they count as errors instead of
+    # silently inflating F1
     valid = [
-        (t, p) for t, p in zip(y_true, y_pred) if p and t in labels
+        (t, p) for t, p in zip(y_true, y_pred) if t in labels
     ]
     if not valid:
         return 0.0
