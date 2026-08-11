@@ -3,19 +3,21 @@ teacher:
   base_url: http://localhost:8000/v1
   temperature: 0.7
   max_tokens: null   # server-side max: full remaining context per request
+  concurrency: 16
 
 student:
   model: google/gemma-4-E2B-it
   base_url: http://localhost:8001/v1
   temperature: 0.3
   max_tokens: null
+  concurrency: 32
 
 dataset:
   name: contract-nli
   split: train
-  max_samples: 100
+  max_samples: null        # full train split (7,191)
   eval_split: test
-  eval_max_samples: 200
+  eval_max_samples: null   # full test split (2,091)
 
 clustering:
   eps: 0.5

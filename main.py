@@ -13,7 +13,7 @@ from src.models import ExtractionResult, ClusterResult
 from src.phase1_extract import extract_instructions, save_instructions
 from src.phase2_cluster import cluster_and_synthesize, save_clusters
 from src.phase3_conflict import resolve_conflicts, save_conflict_result
-from src.phase4_inference import run_inference
+from src.phase4_inference import run_inference, render_system_prompt
 from src.evaluate import compute_macro_f1
 from src.utils import get_stats
 
@@ -258,6 +258,17 @@ def main():
                 f.write(f"{i}. {inst}\n\n")
 
         log.info(f"Saved final instructions to {config.output_dir}/final_instructions.txt")
+
+        # the distilled deliverable: the exact system prompt the student runs with
+        prompt_path = os.path.join(config.output_dir, "system_prompt.txt")
+        with open(prompt_path, "w") as f:
+            f.write(render_system_prompt(consolidated_instructions, labels))
+
+        prompt_artifact = wandb.Artifact(
+            name=f"system-prompt-{config.dataset.name}", type="system-prompt"
+        )
+        prompt_artifact.add_file(prompt_path)
+        wandb.log_artifact(prompt_artifact)
 
     artifact = wandb.Artifact(
         name=f"pipeline-outputs-{wandb.run.id}", type="pipeline-outputs"

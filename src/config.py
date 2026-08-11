@@ -12,6 +12,8 @@ class ModelConfig:
     # null = no client-side cap; the server allows up to the model's max context
     max_tokens: Optional[int] = 4096
     api_key: str = ""
+    # parallel requests; vLLM batches them, LM Studio should stay at 1
+    concurrency: int = 1
 
 
 @dataclass
