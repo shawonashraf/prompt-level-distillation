@@ -9,7 +9,8 @@ class ModelConfig:
     model: str
     base_url: str = "http://localhost:1234/v1"
     temperature: float = 0.7
-    max_tokens: int = 4096
+    # null = no client-side cap; the server allows up to the model's max context
+    max_tokens: Optional[int] = 4096
     api_key: str = ""
 
 

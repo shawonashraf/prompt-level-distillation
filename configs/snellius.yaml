@@ -1,0 +1,41 @@
+teacher:
+  model: google/gemma-4-26B-A4B-it
+  base_url: http://localhost:8000/v1
+  temperature: 0.7
+  max_tokens: null   # server-side max: full remaining context per request
+
+student:
+  model: google/gemma-4-E2B-it
+  base_url: http://localhost:8001/v1
+  temperature: 0.3
+  max_tokens: null
+
+dataset:
+  name: contract-nli
+  split: train
+  max_samples: 100
+  eval_split: test
+  eval_max_samples: 200
+
+clustering:
+  eps: 0.5
+  min_samples: 2
+  embedding_model: all-MiniLM-L6-v2
+
+conflict_resolution:
+  max_iterations: 3
+  convergence_threshold: 0.01
+  sample_size: 20
+
+wandb:
+  project: prompt-level-distillation
+  run_name: snellius-t26b-a4b-s-e2b
+  entity: null
+
+phases:
+  extract: true
+  cluster: true
+  conflict: true
+  evaluate: true
+
+output_dir: /scratch-shared/sashraf1/prompt-d/output

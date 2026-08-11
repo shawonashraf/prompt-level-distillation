@@ -53,6 +53,10 @@ def chat_completion(
     max_tokens: Optional[int] = None,
 ) -> str:
     model = f"openai/{config.model}"
+    kwargs = {}
+    effective_max = max_tokens if max_tokens is not None else config.max_tokens
+    if effective_max:  # null/0 = let the server use the model's allowed maximum
+        kwargs["max_tokens"] = effective_max
     response = litellm.completion(
         model=model,
         messages=[
@@ -62,7 +66,7 @@ def chat_completion(
         api_base=config.base_url,
         api_key=config.api_key or "not-needed",
         temperature=temperature if temperature is not None else config.temperature,
-        max_tokens=max_tokens if max_tokens is not None else config.max_tokens,
+        **kwargs,
     )
     _stats.log(response)
     return response.choices[0].message.content or ""
