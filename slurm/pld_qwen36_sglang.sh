@@ -5,7 +5,7 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=16
 #SBATCH --time=12:00:00
-#SBATCH --output=/projects/0/prjs2013/users/sashraf1/pdistill/slurm-%x-%j.out
+#SBATCH --output=/scratch-shared/sashraf1/prompt-d/slurm-%x-%j.out
 
 # Prompt-Level Distillation full run against SGLang serving
 # Qwen/Qwen3.6-35B-A3B-FP8 on one H100 — container-free path per the

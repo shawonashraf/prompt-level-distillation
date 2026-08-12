@@ -40,4 +40,4 @@ phases:
   conflict: true
   evaluate: true
 
-output_dir: /projects/0/prjs2013/users/sashraf1/pdistill/output
+output_dir: /scratch-shared/sashraf1/prompt-d/output
