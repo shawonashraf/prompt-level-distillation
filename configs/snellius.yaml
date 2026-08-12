@@ -1,13 +1,13 @@
 teacher:
-  model: google/gemma-4-26B-A4B-it
-  base_url: http://localhost:8000/v1
+  model: Qwen/Qwen3.6-35B-A3B-FP8
+  base_url: http://127.0.0.1:8000/v1
   temperature: 0.7
   max_tokens: null   # server-side max: full remaining context per request
   concurrency: 16
 
 student:
-  model: google/gemma-4-E2B-it
-  base_url: http://localhost:8001/v1
+  model: Qwen/Qwen3.6-35B-A3B-FP8
+  base_url: http://127.0.0.1:8000/v1
   temperature: 0.3
   max_tokens: null
   concurrency: 32
@@ -31,7 +31,7 @@ conflict_resolution:
 
 wandb:
   project: prompt-level-distillation
-  run_name: snellius-t26b-a4b-s-e2b
+  run_name: snellius-qwen36-35b-a3b-fp8
   entity: null
 
 phases:
@@ -40,4 +40,4 @@ phases:
   conflict: true
   evaluate: true
 
-output_dir: /scratch-shared/sashraf1/prompt-d/output
+output_dir: /projects/0/prjs2013/users/sashraf1/pdistill/output
