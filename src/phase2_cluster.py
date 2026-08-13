@@ -1,9 +1,10 @@
 import json
 import logging
+import random
 from pathlib import Path
 
 import numpy as np
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 from sentence_transformers import SentenceTransformer
 from jinja2 import Environment, FileSystemLoader
 
@@ -30,20 +31,26 @@ def cluster_and_synthesize(
     embedder = SentenceTransformer(config.clustering.embedding_model)
     embeddings = embedder.encode(rules, show_progress_bar=True)
 
-    db = DBSCAN(
-        eps=config.clustering.eps,
-        min_samples=config.clustering.min_samples,
-        metric="cosine",
-    )
-    labels = db.fit_predict(embeddings)
+    if config.clustering.algorithm == "kmeans":
+        norm = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+        k = min(config.clustering.n_clusters, len(rules))
+        labels = KMeans(n_clusters=k, n_init=10, random_state=42).fit_predict(norm)
+        log.info(f"KMeans produced {k} clusters")
+    else:
+        db = DBSCAN(
+            eps=config.clustering.eps,
+            min_samples=config.clustering.min_samples,
+            metric="cosine",
+        )
+        labels = db.fit_predict(embeddings)
 
-    unique_labels = set(labels)
-    noise_count = 1 if -1 in unique_labels else 0
-    n_clusters = len(unique_labels) - noise_count
-    log.info(
-        f"DBSCAN found {n_clusters} clusters, {noise_count} noise points "
-        f"(eps={config.clustering.eps}, min_samples={config.clustering.min_samples})"
-    )
+        unique_labels = set(labels)
+        noise_count = 1 if -1 in unique_labels else 0
+        n_clusters = len(unique_labels) - noise_count
+        log.info(
+            f"DBSCAN found {n_clusters} clusters, {noise_count} noise points "
+            f"(eps={config.clustering.eps}, min_samples={config.clustering.min_samples})"
+        )
 
     clusters = {}
     for idx, label in enumerate(labels):
@@ -60,7 +67,15 @@ def cluster_and_synthesize(
     results = []
     for cluster_id, members in clusters.items():
         try:
-            prompt = template.render(rules=members["rules"])
+            cap = config.clustering.max_rules_per_synthesis
+            prompt_rules = members["rules"]
+            if len(prompt_rules) > cap:
+                prompt_rules = random.Random(42).sample(prompt_rules, cap)
+                log.info(
+                    f"Cluster {cluster_id}: sampling {cap}/{len(members['rules'])} "
+                    f"rules for the synthesis prompt"
+                )
+            prompt = template.render(rules=prompt_rules)
             response = chat_completion(
                 system="You synthesize similar rules into unified instructions.",
                 user=prompt,
@@ -83,6 +98,12 @@ def cluster_and_synthesize(
             )
         except Exception as e:
             log.error(f"Failed to synthesize cluster {cluster_id}: {e}")
+
+    if clusters and not results:
+        raise RuntimeError(
+            f"All {len(clusters)} cluster syntheses failed; refusing to "
+            f"continue with an empty instruction set."
+        )
 
     return results
 

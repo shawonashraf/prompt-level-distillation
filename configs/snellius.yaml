@@ -23,9 +23,13 @@ dataset:
   local_path: /home/sashraf/projects/prompt-distill/data/contract-nli
 
 clustering:
-  eps: 0.5
-  min_samples: 2
+  # kmeans, not dbscan: measured on the 6,819 extracted rules, DBSCAN
+  # chains everything into one giant cluster at every workable eps.
+  # k=17 matches the paper's cluster count for contract-nli.
+  algorithm: kmeans
+  n_clusters: 17
   embedding_model: all-MiniLM-L6-v2
+  max_rules_per_synthesis: 150
 
 conflict_resolution:
   max_iterations: 3
@@ -38,7 +42,7 @@ wandb:
   entity: null
 
 phases:
-  extract: true
+  extract: false   # phase 1 artifact from job 25547985 is in output_dir
   cluster: true
   conflict: true
   evaluate: true

@@ -197,6 +197,13 @@ def main():
                 c["consolidated_instruction"] for c in cl if c["consolidated_instruction"]
             ]
 
+        if not consolidated_instructions:
+            log.error(
+                "No consolidated instructions available; refusing to evaluate "
+                "with an empty system prompt."
+            )
+            sys.exit(1)
+
         if config.dataset.eval_split and config.dataset.eval_split != config.dataset.split:
             eval_dataset = load_dataset_by_config(
                 config.dataset,

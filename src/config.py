@@ -32,9 +32,17 @@ class DatasetConfig:
 
 @dataclass
 class ClusteringConfig:
+    # kmeans: MiniLM embeddings of extracted rules form one dense continuum,
+    # so DBSCAN chains everything into a single cluster at any workable eps
+    # (measured on 6,819 contract-nli rules)
+    algorithm: str = "dbscan"
+    n_clusters: int = 17
     eps: float = 0.5
     min_samples: int = 2
     embedding_model: str = "all-MiniLM-L6-v2"
+    # cap rules included in one synthesis prompt; a 6,800-rule cluster
+    # overflowed the teacher's context
+    max_rules_per_synthesis: int = 150
 
 
 @dataclass
