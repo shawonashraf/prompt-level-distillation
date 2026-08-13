@@ -15,9 +15,12 @@ student:
 dataset:
   name: contract-nli
   split: train
-  max_samples: null        # full train split (7,191)
+  max_samples: null        # full train split (6,819)
   eval_split: test
-  eval_max_samples: null   # full test split (2,091)
+  eval_max_samples: null   # full test split (1,991)
+  # saved via save_to_disk at prep time; offline nodes can't resolve
+  # data_dir datasets from the hub cache
+  local_path: /home/sashraf/projects/prompt-distill/data/contract-nli
 
 clustering:
   eps: 0.5
@@ -40,4 +43,4 @@ phases:
   conflict: true
   evaluate: true
 
-output_dir: /scratch-shared/sashraf1/prompt-d/output
+output_dir: /home/sashraf/projects/prompt-distill/output

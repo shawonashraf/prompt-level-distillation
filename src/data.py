@@ -87,19 +87,24 @@ def load_dataset_by_config(
     split: str | None = None,
     max_samples: int | None = None,
 ) -> DatasetWrapper:
-    hf_id = config.huggingface_id or DATASET_MAP.get(config.name)
-    if not hf_id:
-        raise ValueError(
-            f"Unknown dataset '{config.name}'. "
-            f"Supported: {list(DATASET_MAP.keys())}. "
-            f"Or set huggingface_id in config."
-        )
+    if config.local_path:
+        from datasets import load_from_disk
 
-    dataset = load_dataset(
-        hf_id,
-        revision="refs/convert/parquet",
-        data_dir=SUBSET_MAP.get(config.name),
-    )
+        dataset = load_from_disk(config.local_path)
+    else:
+        hf_id = config.huggingface_id or DATASET_MAP.get(config.name)
+        if not hf_id:
+            raise ValueError(
+                f"Unknown dataset '{config.name}'. "
+                f"Supported: {list(DATASET_MAP.keys())}. "
+                f"Or set huggingface_id in config."
+            )
+
+        dataset = load_dataset(
+            hf_id,
+            revision="refs/convert/parquet",
+            data_dir=SUBSET_MAP.get(config.name),
+        )
     ds = dataset[split or config.split]
 
     max_samples = max_samples if max_samples is not None else config.max_samples

@@ -5,7 +5,7 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=16
 #SBATCH --time=12:00:00
-#SBATCH --output=/scratch-shared/sashraf1/prompt-d/slurm-%x-%j.out
+#SBATCH --output=/home/sashraf/projects/prompt-distill/slurm-%x-%j.out
 
 # Prompt-Level Distillation full run against SGLang serving
 # Qwen/Qwen3.6-35B-A3B-FP8 on one H100 — container-free path per the
@@ -15,10 +15,10 @@
 # PREREQUISITES (once, on the login node — compute nodes have no
 # package-fetch internet):
 #   bash slurm/prepare_sglang_native.sh
-#   UV_PROJECT_ENVIRONMENT=/projects/0/prjs2013/users/$USER/pdistill_venv/pipeline-venv \
+#   UV_PROJECT_ENVIRONMENT=$HOME/projects/prompt-distill/venvs/pipeline-venv \
 #       uv sync --frozen
 #   HF caches pre-warmed (contract-nli + all-MiniLM-L6-v2) into
-#   /projects/0/prjs2013/cache/huggingface
+#   $HOME/.cache/huggingface
 #
 # Submit from the repo root: sbatch slurm/pld_qwen36_sglang.sh
 
@@ -27,7 +27,7 @@ set -euo pipefail
 PROJECT_DIR="${SLURM_SUBMIT_DIR:-$(pwd)}"
 cd "$PROJECT_DIR"
 
-export NATIVE_ROOT="/projects/0/prjs2013/users/${USER}/pdistill_venv"
+export NATIVE_ROOT="${HOME}/projects/prompt-distill/venvs"
 PIPELINE_VENV="${NATIVE_ROOT}/pipeline-venv"
 
 # wandb key first: a missing key must abort at second zero, not hour 12
@@ -68,7 +68,7 @@ trap cleanup EXIT
 echo "[job] SGLang endpoint ready at ${VLLM_BASE_URL}"
 
 # HF strictly offline (caches pre-warmed on the login node); wandb online
-export HF_HOME="/projects/0/prjs2013/cache/huggingface"
+export HF_HOME="${HOME}/.cache/huggingface"
 export HF_HUB_OFFLINE=1
 
 "${PIPELINE_VENV}/bin/python" main.py -c configs/snellius.yaml -v

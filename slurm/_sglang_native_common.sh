@@ -35,8 +35,8 @@ SGLANG_HEALTH_TIMEOUT_SECS="${SGLANG_HEALTH_TIMEOUT_SECS:-2400}"
 # /projects, not /scratch-shared: scratch was observed deleting hours-old
 # venv files platform-side (2026-08-12, see the SURF ticket evidence) --
 # venvs live on project storage now, alongside the containers and HF cache.
-NATIVE_ROOT="${NATIVE_ROOT:-/projects/0/prjs2013/users/${USER}/pdistill_venv}"
-HF_CACHE_DIR="${HF_CACHE_DIR:-/projects/0/prjs2013/cache/huggingface}"
+NATIVE_ROOT="${NATIVE_ROOT:-${HOME}/projects/prompt-distill/venvs}"
+HF_CACHE_DIR="${HF_CACHE_DIR:-${HOME}/.cache/huggingface}"
 # Overridable: model families with conflicting pins get their own venv
 # (gemma-4 needs sglang@main + a pinned transformers commit; qwen runs on
 # the release). Never share or mutate a venv another job may be using.

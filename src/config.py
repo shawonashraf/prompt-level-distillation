@@ -25,6 +25,9 @@ class DatasetConfig:
     # held-out split for Phase 4 evaluation; None falls back to `split` (leakage)
     eval_split: Optional[str] = None
     eval_max_samples: Optional[int] = None
+    # dataset saved via datasets.save_to_disk; bypasses hub resolution entirely
+    # (offline compute nodes choke on data_dir cache-key lookups)
+    local_path: Optional[str] = None
 
 
 @dataclass

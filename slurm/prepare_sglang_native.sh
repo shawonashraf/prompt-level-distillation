@@ -25,14 +25,14 @@ SGLANG_MODEL="${SGLANG_MODEL:-Qwen/Qwen3.6-35B-A3B-FP8}"
 if [ -z "${NATIVE_ROOT:-}" ]; then
     # /projects, not /scratch-shared: scratch deletes hours-old files
     # platform-side (2026-08-12); must match _sglang_native_common.sh.
-    NATIVE_ROOT="/projects/0/prjs2013/users/${USER}/pdistill_venv"
+    NATIVE_ROOT="${HOME}/projects/prompt-distill/venvs"
     if ! mkdir -p "$NATIVE_ROOT" 2>/dev/null || [ ! -w "$NATIVE_ROOT" ]; then
         echo "[prep-sglang] ERROR: cannot write ${NATIVE_ROOT}. Override: NATIVE_ROOT=... bash $0" >&2
         exit 1
     fi
 fi
 if [ -z "${HF_CACHE_DIR:-}" ]; then
-    HF_CACHE_DIR="/projects/0/prjs2013/cache/huggingface"
+    HF_CACHE_DIR="${HOME}/.cache/huggingface"
     if ! mkdir -p "$HF_CACHE_DIR" 2>/dev/null || [ ! -w "$HF_CACHE_DIR" ]; then
         echo "[prep-sglang] ERROR: cannot write ${HF_CACHE_DIR}. Override: HF_CACHE_DIR=... bash $0" >&2
         exit 1
@@ -62,7 +62,7 @@ command -v uv >/dev/null 2>&1 || { echo "[prep-sglang] ERROR: uv not found." >&2
 if [ ! -x "${VENV}/bin/python" ]; then
     run uv venv --python python3 "$VENV"
 fi
-run uv pip install --python "${VENV}/bin/python" "sglang[all]>=0.5.10"
+run uv pip install --python "${VENV}/bin/python" --prerelease=allow "sglang[all]==0.5.17"
 run uv pip check --python "${VENV}/bin/python"
 if [ -z "$DRY_RUN" ]; then
     uv pip freeze --python "${VENV}/bin/python" > "${NATIVE_ROOT}/sglang-manifest.txt"
