@@ -38,6 +38,17 @@ Cross-cutting pieces:
 - **`prompts/*.j2`** — Jinja2 templates, one per phase; phase 1 has one per dataset (`extract_<dataset>.j2`). Adding a dataset means: entry in `DATASET_MAP`/`SUBSET_MAP`/`LABEL_MAPS`, accessor cases in `DatasetExample`, and a new extract template selected in `phase1_extract.py`.
 - **Evaluation** — `normalize_label()` maps free-text student output to a label by leftmost substring match; `compute_macro_f1()` keeps failed/empty predictions so they count as errors. Phase 4 evaluates on `dataset.eval_split` (held out); if unset it falls back to the train split and logs a leakage warning.
 
+## Teacher/student roles
+
+The paper's protocol: a **large teacher** runs phases 1–3 (extraction, synthesis, error-driven refinement); the headline metric is phase 4 run on a **smaller student** with the distilled prompt in its system prompt. A teacher evaluating itself on its own distilled prompt is a sanity ceiling, not the paper metric — never report it as the result.
+
+In the config, `teacher:` drives phases 1–3's LLM calls and `student:` is the model phase 3 refines against **and** phase 4 evaluates. On Snellius this is two jobs:
+
+1. `slurm/pld_qwen36_sglang.sh` + `configs/snellius.yaml` — Qwen3.6-35B-A3B-FP8 as both roles produces the distilled prompt (`output/conflict_resolution.json`); its phase-4 F1 (0.76) is self-transfer.
+2. `slurm/pld_e2b_student_eval.sh` + `configs/snellius_student_eval.yaml` — phase 4 only: `google/gemma-4-E2B-it` (own sglang venv, sglang@main + pinned transformers) evaluated with the teacher's instructions staged into `output_student/` (F1 0.68).
+
+Known gap: run 1 refined instructions against the 35B's errors, not the student's. For a fully paper-faithful run, point `student:` at the small model for phases 3–4 so refinement targets the model being evaluated.
+
 ## Deviations from the paper
 
 Deliberate, for local-scale runs — don't "fix" toward the paper without measuring:
