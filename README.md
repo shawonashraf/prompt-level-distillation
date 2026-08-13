@@ -24,6 +24,5 @@ All runs are set up to be logged to Weights & Biases.
 
 ### Completed Runs
 
-Report on the completed run using Qwen 3.6 35B A3B on Snellius: https://api.wandb.ai/links/shawonashraf/yn47mza1
-
+Report on the completed run using Qwen 3.6 35B A3B (Teacher) and Gemma 4 E2B (Student) on Snellius: https://api.wandb.ai/links/shawonashraf/tcve6iew
 
