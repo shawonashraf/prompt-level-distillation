@@ -20,4 +20,10 @@ uv run python main.py -c configs/example.yaml
 
 ## Track experiments
 
-All runs are logged to Weights & Biases under the `prompt-level-distillation` project. Metrics include per-phase F1 scores, cluster statistics, and LLM cost tracking (requests, input/output/reasoning tokens). View runs at https://wandb.ai.
+All runs are set up to be logged to Weights & Biases.
+
+### Completed Runs
+
+Report on the completed run using Qwen 3.6 35B A3B on Snellius: https://api.wandb.ai/links/shawonashraf/yn47mza1
+
+
