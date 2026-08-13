@@ -43,6 +43,7 @@ Cross-cutting pieces:
 Deliberate, for local-scale runs — don't "fix" toward the paper without measuring:
 
 - Teacher/synthesizer/student are all local LM Studio models (paper: Gemini 3 Flash/Pro teacher, Gemma-3 4B / Mistral Small students).
-- Embeddings: `all-MiniLM-L6-v2` with DBSCAN `eps=0.5, min_samples=2` (paper: Gemini Embedding 768-dim, `eps=0.4, min_samples=6`). The small `min_samples` is what makes clustering work at ~50 samples.
+- Embeddings: `all-MiniLM-L6-v2` (paper: Gemini Embedding 768-dim). DBSCAN `eps=0.5, min_samples=2` works only at ~50-sample scale; at full scale (6,819 rules) MiniLM embeddings form one dense continuum and DBSCAN chains everything into a single cluster at every workable eps — use `clustering.algorithm: kmeans` with `n_clusters: 17` (measured; matches the paper's contract-nli cluster count) as in `configs/snellius.yaml`.
+- Full-scale serving on Snellius is bare-metal SGLang (`slurm/`), not vLLM/Apptainer — see `slurm/pld_qwen36_sglang.sh` for the H100 job that produced the 0.76 test F1 run.
 - Phase 3 convergence is measured on the train split (paper monitors a validation split).
 - LogiQA (third task in the paper) is not implemented.
