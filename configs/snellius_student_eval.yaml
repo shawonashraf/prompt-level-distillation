@@ -1,0 +1,48 @@
+# Phase 4 only: evaluate the DISTILLED prompt (from the teacher run's
+# conflict_resolution.json, copied into output_dir) on the real student
+# model, per the paper's teacher->student transfer protocol.
+teacher:
+  model: google/gemma-4-E2B-it   # unused in phase 4; kept for config shape
+  base_url: http://127.0.0.1:18472/v1
+  temperature: 0.7
+  max_tokens: null
+  concurrency: 16
+
+student:
+  model: google/gemma-4-E2B-it
+  base_url: http://127.0.0.1:18472/v1
+  temperature: 0.3
+  max_tokens: null
+  concurrency: 32
+
+dataset:
+  name: contract-nli
+  split: train
+  max_samples: null
+  eval_split: test
+  eval_max_samples: null
+  local_path: /home/sashraf/projects/prompt-distill/data/contract-nli
+
+clustering:
+  algorithm: kmeans
+  n_clusters: 17
+  embedding_model: all-MiniLM-L6-v2
+  max_rules_per_synthesis: 150
+
+conflict_resolution:
+  max_iterations: 3
+  convergence_threshold: 0.01
+  sample_size: 20
+
+wandb:
+  project: prompt-level-distillation
+  run_name: snellius-student-e2b-eval
+  entity: null
+
+phases:
+  extract: false
+  cluster: false
+  conflict: false
+  evaluate: true
+
+output_dir: /home/sashraf/projects/prompt-distill/output_student
