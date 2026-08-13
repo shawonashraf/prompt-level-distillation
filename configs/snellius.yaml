@@ -1,13 +1,13 @@
 teacher:
   model: Qwen/Qwen3.6-35B-A3B-FP8
-  base_url: http://127.0.0.1:8000/v1
+  base_url: http://127.0.0.1:18471/v1
   temperature: 0.7
   max_tokens: null   # server-side max: full remaining context per request
   concurrency: 16
 
 student:
   model: Qwen/Qwen3.6-35B-A3B-FP8
-  base_url: http://127.0.0.1:8000/v1
+  base_url: http://127.0.0.1:18471/v1
   temperature: 0.3
   max_tokens: null
   concurrency: 32

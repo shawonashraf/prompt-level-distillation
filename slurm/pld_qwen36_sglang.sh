@@ -53,6 +53,15 @@ module load Python/3.12.3-GCCcore-13.3.0 2>/dev/null \
 
 export SGLANG_MODEL="Qwen/Qwen3.6-35B-A3B-FP8"
 export SGLANG_TP_SIZE=1
+# NOT 8000: gpu_h100 nodes are shared, and another job serving on the
+# default port answers our health check while our own server fails to
+# bind (observed job 25547944). Port must match configs/snellius.yaml.
+export SGLANG_PORT=18471
+
+if curl -sf "http://127.0.0.1:${SGLANG_PORT}/health" > /dev/null 2>&1; then
+    echo "[job] ERROR: port ${SGLANG_PORT} already serving on this node — pick another port" >&2
+    exit 1
+fi
 
 # starts the server, waits for /health, exports SGLANG_PID + VLLM_BASE_URL
 source "${PROJECT_DIR}/slurm/_sglang_native_common.sh"
@@ -65,7 +74,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "[job] SGLang endpoint ready at ${VLLM_BASE_URL}"
+# health passing must mean OUR server: with a unique port the only thing
+# that can answer is the process we just started — assert it's alive
+kill -0 "$SGLANG_PID" 2>/dev/null || { echo "[job] ERROR: our SGLang process died; health was answered by something else" >&2; exit 1; }
+echo "[job] SGLang endpoint ready at ${VLLM_BASE_URL} (pid ${SGLANG_PID})"
 
 # HF strictly offline (caches pre-warmed on the login node); wandb online
 export HF_HOME="${HOME}/.cache/huggingface"
